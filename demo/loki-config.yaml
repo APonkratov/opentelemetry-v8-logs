@@ -1,7 +1,9 @@
 # Конфигурация Loki для демонстрации: конфигурация образа grafana/otel-lgtm 0.30.0
 # (https://github.com/grafana/docker-otel-lgtm/blob/v0.30.0/docker/loki-config.yaml, Apache License 2.0)
-# с добавленным limits_config.otlp_config: атрибут ресурса v8.infobase.name становится
-# индексируемой меткой v8_infobase_name в дополнение к меткам Loki по умолчанию (service_name и др.).
+# с изменениями в limits_config:
+# - otlp_config: атрибут ресурса v8.infobase.name становится индексируемой меткой v8_infobase_name
+#   в дополнение к меткам Loki по умолчанию (service_name и др.);
+# - reject_old_samples: принимаются записи старше недели, иначе накопленные журналы отбрасываются.
 
 auth_enabled: false
 
@@ -31,6 +33,7 @@ schema_config:
         period: 24h
 
 limits_config:
+  reject_old_samples: false
   otlp_config:
     resource_attributes:
       attributes_config:

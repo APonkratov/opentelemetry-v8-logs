@@ -60,7 +60,8 @@ opentelemetry-v8-logs --help
 В каталоге `demo` репозитория:
 
 - `docker-compose.yml` - стек LGTM в одном контейнере (`grafana/otel-lgtm`);
-- `loki-config.yaml` - конфигурация Loki, в которой база (`v8.infobase.name`) - индексируемая метка;
+- `loki-config.yaml` - конфигурация Loki, в которой база (`v8.infobase.name`) - индексируемая метка
+  и принимаются записи старше недели;
 - `tempo-config.yaml` - конфигурация Tempo, в которой спаны накопленных журналов находятся поиском
   по своему времени, см. [состав телеметрии](./telemetry.md#трассы);
 - `autumn-properties.json` - пример настроек приложения;
@@ -73,6 +74,11 @@ opentelemetry-v8-logs
 ```
 
 Grafana: http://localhost:3000.
+
+Loki по умолчанию отбрасывает записи старше недели. При отправке через OpenTelemetry Collector
+это не считается ошибкой отправки, и позиции фиксируются. Чтобы передать накопленные журналы,
+разрешите старые записи в Loki, как в `demo/loki-config.yaml`, или пропустите их настройкой
+`start-from-end`.
 
 ## Производительность
 
