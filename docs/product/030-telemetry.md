@@ -104,7 +104,7 @@ Loki делает индексируемыми метками только ат�
 | `CALL`, `SCALL` | интерфейс и метод (`IName`, `MName` или `Method`), иначе `Func` | `SCALL ILogMngrData.writeLogEntryData`, `CALL Dynamic list search` |
 | `CALL`, `SCALL` без метода и контекста | `Func` и, если доступны, `Form.FormItem` | `CALL Dynamic list search · Документ.Заказ.Форма.ФормаДокумента.Список` |
 | `SDBL` | `Func`, иначе вид запроса и таблица | `SDBL HoldConnection`, `SDBL UPDATE Document54` |
-| `DBMSSQL`, `DBPOSTGRS`, `DBORACLE`, `DB2` | вид запроса и таблица; для ODBC `{call ...}` — `EXEC` и имя процедуры; без запроса — `Func` | `DBMSSQL INSERT _Document54`, `DBMSSQL EXEC sp_executesql` |
+| `DBMSSQL`, `DBPOSTGRS`, `DBORACLE`, `DB2`, `DBV8DBEng` | вид запроса и таблица; для ODBC `{call ...}` — `EXEC` и имя процедуры; без запроса — `Func` | `DBMSSQL INSERT _Document54`, `DBMSSQL EXEC sp_executesql`, `DBV8DBEng readFile` |
 | `TLOCK` | пространства блокировок (`Regions`) | `TLOCK Document54.REFLOCK` |
 | `EXCP` | тип исключения и место вызова; без `Context` — первый кадр `{Модуль(строка)}` из `Descr` | `EXCP RuntimeException · ОбщийМодуль.Test.Модуль:42` |
 | синтетический | `UNLOGGED` | |
@@ -122,7 +122,7 @@ Loki делает индексируемыми метками только ат�
 | Событие | Спан |
 |---------|------|
 | `CALL` | вид `SERVER` |
-| `DBMSSQL`, `DBPOSTGRS`, `DBORACLE`, `DB2` | вид `CLIENT`, `db.system.name` |
+| `DBMSSQL`, `DBPOSTGRS`, `DBORACLE`, `DB2`, `DBV8DBEng` | вид `CLIENT`, `db.system.name`; у файловой базы (`DBV8DBEng`) своего значения в семантических соглашениях нет, используется `1c.v8dbeng` |
 | `EXCP` | вид `INTERNAL`, статус `ERROR`, событие `exception` (`exception.type`, `exception.message`) |
 | остальные | вид `INTERNAL` |
 
