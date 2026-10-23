@@ -4,6 +4,8 @@ out/
 
 # Служебные файлы разработки и локальные данные журналов: в репозиторий не попадают
 .local/
+/autumn-properties.json
+/opentelemetry-v8-logs.db
 *.log
 *.lgf
 *.lgp
