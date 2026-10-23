@@ -73,7 +73,9 @@ cp demo/autumn-properties.json .   # укажите свои каталоги ж
 opentelemetry-v8-logs
 ```
 
-Grafana: http://localhost:3000.
+Grafana: http://localhost:3000. Данные - в Explore: логи в Loki по `service_name` из настроек,
+трассы в Tempo, метрики `v8_techlog_event_duration_*` и `v8_eventlog_records_total` в Prometheus.
+Записи приходят со временем события в журнале: для старых журналов расширьте период в Grafana.
 
 Loki по умолчанию отбрасывает записи старше недели. При отправке через OpenTelemetry Collector
 это не считается ошибкой отправки, и позиции фиксируются. Чтобы передать накопленные журналы,

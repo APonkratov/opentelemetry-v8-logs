@@ -31,7 +31,7 @@ opm install opentelemetry-v8-logs
 docker compose -f demo/docker-compose.yml up -d
 
 # настройки - в autumn-properties.json текущего каталога, пример в demo/
-cp demo/autumn-properties.json .
+cp demo/autumn-properties.json .   # укажите свои каталоги журналов
 opentelemetry-v8-logs
 ```
 
