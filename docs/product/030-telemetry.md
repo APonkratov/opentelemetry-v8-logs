@@ -123,6 +123,7 @@ Loki делает индексируемыми метками только ат�
 |---------|------|
 | `CALL` | вид `SERVER` |
 | `DBMSSQL`, `DBPOSTGRS`, `DBORACLE`, `DB2` | вид `CLIENT`, `db.system.name` |
+| `DBV8DBEng` (файловая база) | вид `CLIENT`, `db.system.name` = `1c.v8dbeng`: своего значения у файловой базы в семантических соглашениях нет |
 | `EXCP` | вид `INTERNAL`, статус `ERROR`, событие `exception` (`exception.type`, `exception.message`) |
 | остальные | вид `INTERNAL` |
 
