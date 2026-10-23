@@ -26,7 +26,7 @@ title: Настройка
     "logs": { "exporter": "otlp" },
     "v8-logs": {
       "service": { "name": "1c-cluster" },
-      "resource": { "attributes": "deployment.environment.name=prod" },
+      "resource": { "attributes": "deployment.environment.name=production" },
       "timezone": "Europe/Moscow",
       "techlog": [
         { "path": "/var/log/1c/techlog" }
