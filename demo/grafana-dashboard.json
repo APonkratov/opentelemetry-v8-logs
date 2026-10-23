@@ -1,0 +1,585 @@
+{
+  "uid": "opentelemetry-v8-logs",
+  "title": "1С: журналы",
+  "description": "Журнал регистрации и технологический журнал 1С, собранные opentelemetry-v8-logs",
+  "tags": ["1c", "opentelemetry-v8-logs"],
+  "editable": true,
+  "graphTooltip": 1,
+  "schemaVersion": 41,
+  "time": { "from": "now-7d", "to": "now" },
+  "refresh": "5m",
+  "links": [
+    {
+      "title": "Трассы: Drilldown",
+      "type": "link",
+      "icon": "external link",
+      "url": "/a/grafana-exploretraces-app/explore?var-ds=${ds_tempo}&var-primarySignal=nestedSetParent%3C0",
+      "keepTime": true
+    },
+    {
+      "title": "Логи: Drilldown",
+      "type": "link",
+      "icon": "external link",
+      "url": "/a/grafana-lokiexplore-app/explore?var-ds=${ds_loki}",
+      "keepTime": true
+    }
+  ],
+  "templating": {
+    "list": [
+      {
+        "name": "ds_loki",
+        "label": "Loki",
+        "type": "datasource",
+        "query": "loki",
+        "current": { "text": "Loki", "value": "loki" }
+      },
+      {
+        "name": "ds_prometheus",
+        "label": "Prometheus",
+        "type": "datasource",
+        "query": "prometheus",
+        "current": { "text": "Prometheus", "value": "prometheus" }
+      },
+      {
+        "name": "ds_tempo",
+        "label": "Tempo",
+        "type": "datasource",
+        "query": "tempo",
+        "current": { "text": "Tempo", "value": "tempo" }
+      },
+      {
+        "name": "infobase",
+        "label": "База",
+        "description": "Информационная база журнала регистрации (v8.infobase.name)",
+        "type": "query",
+        "datasource": { "type": "loki", "uid": "${ds_loki}" },
+        "query": { "type": 1, "label": "v8_infobase_name", "stream": "", "refId": "infobase" },
+        "refresh": 2,
+        "sort": 1,
+        "multi": true,
+        "includeAll": true,
+        "allValue": ".+",
+        "current": { "text": ["All"], "value": ["$__all"] }
+      },
+      {
+        "name": "service",
+        "label": "Сервис техжурнала",
+        "description": "service.name источников технологического журнала",
+        "type": "query",
+        "datasource": { "type": "loki", "uid": "${ds_loki}" },
+        "query": { "type": 1, "label": "service_name", "stream": "", "refId": "service" },
+        "refresh": 2,
+        "sort": 1,
+        "multi": true,
+        "includeAll": true,
+        "allValue": ".+",
+        "current": { "text": ["All"], "value": ["$__all"] }
+      },
+      {
+        "name": "min_duration",
+        "label": "Трассы от",
+        "description": "Минимальная длительность трассы в таблице трасс, например 100ms или 1s",
+        "type": "textbox",
+        "query": "100ms",
+        "current": { "text": "100ms", "value": "100ms" }
+      },
+      {
+        "name": "user",
+        "label": "Пользователь",
+        "description": "Пользователь 1С в трассах (v8.techlog.Usr)",
+        "type": "query",
+        "datasource": { "type": "tempo", "uid": "${ds_tempo}" },
+        "query": { "type": 1, "label": "v8.techlog.Usr", "refId": "user" },
+        "refresh": 2,
+        "sort": 1,
+        "multi": true,
+        "includeAll": true,
+        "allValue": ".*",
+        "current": { "text": ["All"], "value": ["$__all"] }
+      },
+      {
+        "name": "trace_id",
+        "label": "Трасса",
+        "description": "Идентификатор трассы для каскада вызовов; заполняется нажатием на трассу в таблице",
+        "type": "textbox",
+        "query": "",
+        "current": { "text": "", "value": "" }
+      }
+    ]
+  },
+  "panels": [
+    {
+      "id": 1,
+      "type": "row",
+      "title": "Журнал регистрации",
+      "collapsed": false,
+      "gridPos": { "x": 0, "y": 0, "w": 24, "h": 1 },
+      "panels": []
+    },
+    {
+      "id": 2,
+      "type": "stat",
+      "title": "Записей",
+      "description": "Loki хранит одинаковые записи одной секунды как одну; точное количество - метрика v8_eventlog_records_total",
+      "datasource": { "type": "loki", "uid": "${ds_loki}" },
+      "gridPos": { "x": 0, "y": 1, "w": 5, "h": 4 },
+      "targets": [
+        {
+          "refId": "A",
+          "queryType": "instant",
+          "expr": "sum(count_over_time({v8_infobase_name=~\"$infobase\"} | scope_name=\"opentelemetry-v8-logs.eventlog\" [$__range]))"
+        }
+      ],
+      "fieldConfig": { "defaults": { "unit": "short", "noValue": "0", "color": { "mode": "fixed", "fixedColor": "text" } }, "overrides": [] },
+      "options": { "reduceOptions": { "calcs": ["lastNotNull"] }, "colorMode": "value", "graphMode": "none" }
+    },
+    {
+      "id": 3,
+      "type": "stat",
+      "title": "Ошибок",
+      "datasource": { "type": "loki", "uid": "${ds_loki}" },
+      "gridPos": { "x": 0, "y": 5, "w": 5, "h": 4 },
+      "targets": [
+        {
+          "refId": "A",
+          "queryType": "instant",
+          "expr": "sum(count_over_time({v8_infobase_name=~\"$infobase\"} | scope_name=\"opentelemetry-v8-logs.eventlog\" | severity_text=\"ERROR\" [$__range]))"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "noValue": "0",
+          "color": { "mode": "thresholds" },
+          "thresholds": { "mode": "absolute", "steps": [ { "color": "green", "value": null }, { "color": "red", "value": 1 } ] }
+        },
+        "overrides": []
+      },
+      "options": { "reduceOptions": { "calcs": ["lastNotNull"] }, "colorMode": "value", "graphMode": "none" }
+    },
+    {
+      "id": 4,
+      "type": "timeseries",
+      "title": "Записи по важности",
+      "datasource": { "type": "loki", "uid": "${ds_loki}" },
+      "gridPos": { "x": 5, "y": 1, "w": 19, "h": 8 },
+      "targets": [
+        {
+          "refId": "A",
+          "queryType": "range",
+          "legendFormat": "{{severity_text}}",
+          "expr": "sum by (severity_text) (count_over_time({v8_infobase_name=~\"$infobase\"} | scope_name=\"opentelemetry-v8-logs.eventlog\" [$__auto]))"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": { "unit": "short", "custom": { "drawStyle": "line", "lineWidth": 1, "fillOpacity": 20, "showPoints": "always", "pointSize": 5, "spanNulls": false } },
+        "overrides": [
+          { "matcher": { "id": "byName", "options": "ERROR" }, "properties": [ { "id": "color", "value": { "mode": "fixed", "fixedColor": "red" } } ] },
+          { "matcher": { "id": "byName", "options": "WARN" }, "properties": [ { "id": "color", "value": { "mode": "fixed", "fixedColor": "yellow" } } ] },
+          { "matcher": { "id": "byName", "options": "INFO" }, "properties": [ { "id": "color", "value": { "mode": "fixed", "fixedColor": "green" } } ] },
+          { "matcher": { "id": "byName", "options": "DEBUG" }, "properties": [ { "id": "color", "value": { "mode": "fixed", "fixedColor": "blue" } } ] }
+        ]
+      },
+      "options": { "legend": { "displayMode": "list", "placement": "bottom" }, "tooltip": { "mode": "multi", "sort": "desc" } }
+    },
+    {
+      "id": 5,
+      "type": "bargauge",
+      "title": "Частые события",
+      "datasource": { "type": "loki", "uid": "${ds_loki}" },
+      "gridPos": { "x": 0, "y": 9, "w": 12, "h": 9 },
+      "targets": [
+        {
+          "refId": "A",
+          "queryType": "range",
+          "legendFormat": "{{v8_eventlog_event_presentation}}",
+          "expr": "sum by (v8_eventlog_event_presentation) (count_over_time({v8_infobase_name=~\"$infobase\"} | scope_name=\"opentelemetry-v8-logs.eventlog\" [$__auto]))"
+        }
+      ],
+      "transformations": [
+        { "id": "reduce", "options": { "reducers": ["sum"] } },
+        { "id": "sortBy", "options": { "sort": [ { "field": "Total", "desc": true } ] } }
+      ],
+      "fieldConfig": { "defaults": { "unit": "short", "displayName": "${__data.fields.Field}", "color": { "mode": "fixed", "fixedColor": "blue" } }, "overrides": [] },
+      "options": { "orientation": "horizontal", "displayMode": "basic", "showUnfilled": true, "sizing": "manual", "maxVizHeight": 24, "minVizHeight": 16, "reduceOptions": { "values": true, "calcs": [], "limit": 10 } }
+    },
+    {
+      "id": 6,
+      "type": "bargauge",
+      "title": "Активные пользователи",
+      "datasource": { "type": "loki", "uid": "${ds_loki}" },
+      "gridPos": { "x": 12, "y": 9, "w": 12, "h": 9 },
+      "targets": [
+        {
+          "refId": "A",
+          "queryType": "range",
+          "legendFormat": "{{user_name}}",
+          "expr": "sum by (user_name) (count_over_time({v8_infobase_name=~\"$infobase\"} | scope_name=\"opentelemetry-v8-logs.eventlog\" | user_name!=\"\" [$__auto]))"
+        }
+      ],
+      "transformations": [
+        { "id": "reduce", "options": { "reducers": ["sum"] } },
+        { "id": "sortBy", "options": { "sort": [ { "field": "Total", "desc": true } ] } }
+      ],
+      "fieldConfig": { "defaults": { "unit": "short", "displayName": "${__data.fields.Field}", "color": { "mode": "fixed", "fixedColor": "purple" } }, "overrides": [] },
+      "options": { "orientation": "horizontal", "displayMode": "basic", "showUnfilled": true, "sizing": "manual", "maxVizHeight": 24, "minVizHeight": 16, "reduceOptions": { "values": true, "calcs": [], "limit": 10 } }
+    },
+    {
+      "id": 7,
+      "type": "logs",
+      "title": "Ошибки и предупреждения",
+      "datasource": { "type": "loki", "uid": "${ds_loki}" },
+      "gridPos": { "x": 0, "y": 18, "w": 24, "h": 9 },
+      "targets": [
+        {
+          "refId": "A",
+          "queryType": "range",
+          "expr": "{v8_infobase_name=~\"$infobase\"} | scope_name=\"opentelemetry-v8-logs.eventlog\" | severity_text=~\"ERROR|WARN\""
+        }
+      ],
+      "options": { "showTime": true, "wrapLogMessage": true, "sortOrder": "Descending", "enableLogDetails": true }
+    },
+    {
+      "id": 8,
+      "type": "row",
+      "title": "Технологический журнал",
+      "collapsed": false,
+      "gridPos": { "x": 0, "y": 27, "w": 24, "h": 1 },
+      "panels": []
+    },
+    {
+      "id": 9,
+      "type": "timeseries",
+      "title": "События по типу",
+      "datasource": { "type": "loki", "uid": "${ds_loki}" },
+      "gridPos": { "x": 0, "y": 28, "w": 16, "h": 8 },
+      "targets": [
+        {
+          "refId": "A",
+          "queryType": "range",
+          "legendFormat": "{{v8_techlog_event_name}}",
+          "expr": "sum by (v8_techlog_event_name) (count_over_time({service_name=~\"$service\"} | scope_name=\"opentelemetry-v8-logs.techlog\" [$__auto]))"
+        }
+      ],
+      "fieldConfig": { "defaults": { "unit": "short", "custom": { "drawStyle": "line", "lineWidth": 1, "fillOpacity": 20, "showPoints": "always", "pointSize": 5, "spanNulls": false } }, "overrides": [] },
+      "options": { "legend": { "displayMode": "list", "placement": "bottom" }, "tooltip": { "mode": "multi", "sort": "desc" } }
+    },
+    {
+      "id": 10,
+      "type": "stat",
+      "title": "Исключения и проблемы блокировок",
+      "datasource": { "type": "loki", "uid": "${ds_loki}" },
+      "gridPos": { "x": 16, "y": 28, "w": 8, "h": 8 },
+      "targets": [
+        {
+          "refId": "A",
+          "queryType": "range",
+          "legendFormat": "{{v8_techlog_event_name}}",
+          "expr": "sum by (v8_techlog_event_name) (count_over_time({service_name=~\"$service\"} | scope_name=\"opentelemetry-v8-logs.techlog\" | v8_techlog_event_name=~\"EXCP|TDEADLOCK|TTIMEOUT\" [$__auto]))"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "noValue": "0",
+          "color": { "mode": "thresholds" },
+          "thresholds": { "mode": "absolute", "steps": [ { "color": "green", "value": null }, { "color": "red", "value": 1 } ] }
+        },
+        "overrides": []
+      },
+      "options": { "reduceOptions": { "calcs": ["sum"] }, "colorMode": "value", "graphMode": "none", "textMode": "value_and_name" }
+    },
+    {
+      "id": 11,
+      "type": "bargauge",
+      "title": "Самые долгие события",
+      "description": "Максимальная длительность (v8.techlog.duration) по типу события за период",
+      "datasource": { "type": "loki", "uid": "${ds_loki}" },
+      "gridPos": { "x": 0, "y": 36, "w": 12, "h": 9 },
+      "targets": [
+        {
+          "refId": "A",
+          "queryType": "range",
+          "legendFormat": "{{v8_techlog_event_name}}",
+          "expr": "max by (v8_techlog_event_name) (max_over_time({service_name=~\"$service\"} | scope_name=\"opentelemetry-v8-logs.techlog\" | unwrap v8_techlog_duration [$__auto]))"
+        }
+      ],
+      "transformations": [
+        { "id": "reduce", "options": { "reducers": ["max"] } },
+        { "id": "sortBy", "options": { "sort": [ { "field": "Max", "desc": true } ] } }
+      ],
+      "fieldConfig": { "defaults": { "unit": "µs", "displayName": "${__data.fields.Field}", "color": { "mode": "fixed", "fixedColor": "orange" } }, "overrides": [] },
+      "options": { "orientation": "horizontal", "displayMode": "basic", "showUnfilled": true, "sizing": "manual", "maxVizHeight": 24, "minVizHeight": 16, "reduceOptions": { "values": true, "calcs": [], "limit": 10 } }
+    },
+    {
+      "id": 12,
+      "type": "logs",
+      "title": "Исключения",
+      "datasource": { "type": "loki", "uid": "${ds_loki}" },
+      "gridPos": { "x": 12, "y": 36, "w": 12, "h": 9 },
+      "targets": [
+        {
+          "refId": "A",
+          "queryType": "range",
+          "expr": "{service_name=~\"$service\"} | scope_name=\"opentelemetry-v8-logs.techlog\" | v8_techlog_event_name=\"EXCP\""
+        }
+      ],
+      "options": { "showTime": true, "wrapLogMessage": true, "sortOrder": "Descending", "enableLogDetails": true }
+    },
+    {
+      "id": 13,
+      "type": "row",
+      "title": "Метрики",
+      "description": "Метрики привязаны ко времени отправки, а не события: накопленные журналы дают всплеск в момент выгрузки",
+      "collapsed": false,
+      "gridPos": { "x": 0, "y": 45, "w": 24, "h": 1 },
+      "panels": []
+    },
+    {
+      "id": 14,
+      "type": "timeseries",
+      "title": "Длительность событий техжурнала, p95",
+      "datasource": { "type": "prometheus", "uid": "${ds_prometheus}" },
+      "gridPos": { "x": 0, "y": 46, "w": 12, "h": 8 },
+      "targets": [
+        {
+          "refId": "A",
+          "legendFormat": "{{v8_techlog_event_name}}",
+          "expr": "histogram_quantile(0.95, sum by (le, v8_techlog_event_name) (rate(v8_techlog_event_duration_seconds_bucket{service_name=~\"$service\"}[$__rate_interval])))"
+        }
+      ],
+      "fieldConfig": { "defaults": { "unit": "s", "custom": { "drawStyle": "line", "fillOpacity": 10, "spanNulls": true } }, "overrides": [] },
+      "options": { "legend": { "displayMode": "list", "placement": "bottom" }, "tooltip": { "mode": "multi", "sort": "desc" } }
+    },
+    {
+      "id": 15,
+      "type": "timeseries",
+      "title": "События техжурнала в секунду",
+      "datasource": { "type": "prometheus", "uid": "${ds_prometheus}" },
+      "gridPos": { "x": 12, "y": 46, "w": 12, "h": 8 },
+      "targets": [
+        {
+          "refId": "A",
+          "legendFormat": "{{v8_techlog_event_name}}",
+          "expr": "sum by (v8_techlog_event_name) (rate(v8_techlog_event_duration_seconds_count{service_name=~\"$service\"}[$__rate_interval]))"
+        }
+      ],
+      "fieldConfig": { "defaults": { "unit": "ops", "custom": { "drawStyle": "line", "fillOpacity": 10 } }, "overrides": [] },
+      "options": { "legend": { "displayMode": "list", "placement": "bottom" }, "tooltip": { "mode": "multi", "sort": "desc" } }
+    },
+    {
+      "id": 16,
+      "type": "timeseries",
+      "title": "Записи журнала регистрации в секунду",
+      "datasource": { "type": "prometheus", "uid": "${ds_prometheus}" },
+      "gridPos": { "x": 0, "y": 54, "w": 24, "h": 8 },
+      "targets": [
+        {
+          "refId": "A",
+          "legendFormat": "{{v8_infobase_name}} {{v8_eventlog_severity}}",
+          "expr": "sum by (v8_infobase_name, v8_eventlog_severity) (rate(v8_eventlog_records_total{v8_infobase_name=~\"$infobase\"}[$__rate_interval]))"
+        }
+      ],
+      "fieldConfig": { "defaults": { "unit": "ops", "custom": { "drawStyle": "line", "fillOpacity": 10 } }, "overrides": [] },
+      "options": { "legend": { "displayMode": "list", "placement": "bottom" }, "tooltip": { "mode": "multi", "sort": "desc" } }
+    },
+    {
+      "id": 17,
+      "type": "row",
+      "title": "Трассы",
+      "collapsed": false,
+      "gridPos": { "x": 0, "y": 62, "w": 24, "h": 1 },
+      "panels": []
+    },
+    {
+      "id": 19,
+      "type": "table",
+      "title": "Медленные операции",
+      "description": "Средняя длительность спанов по операции, базе и пользователю за период, не больше 7 дней. Нажмите на операцию, чтобы открыть её трассы",
+      "datasource": { "type": "tempo", "uid": "${ds_tempo}" },
+      "gridPos": { "x": 0, "y": 63, "w": 24, "h": 10 },
+      "targets": [
+        {
+          "refId": "A",
+          "queryType": "traceql",
+          "metricsQueryType": "instant",
+          "query": "{resource.service.name=~\"$service\" && resource.v8.infobase.name=~\"$infobase\" && span.v8.techlog.Usr=~\"$user\"} | avg_over_time(duration) by (name, resource.v8.infobase.name, span.v8.techlog.Usr) | topk(15)"
+        }
+      ],
+      "transformations": [
+        { "id": "reduce", "options": { "reducers": ["lastNotNull"], "labelsToFields": true } },
+        {
+          "id": "organize",
+          "options": {
+            "excludeByName": { "Field": true },
+            "indexByName": { "name": 0, "resource.v8.infobase.name": 1, "span.v8.techlog.Usr": 2, "Last *": 3 },
+            "renameByName": { "name": "Операция", "resource.v8.infobase.name": "База", "span.v8.techlog.Usr": "Пользователь", "Last *": "Среднее" }
+          }
+        },
+        { "id": "sortBy", "options": { "sort": [ { "field": "Среднее", "desc": true } ] } }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "mappings": [ { "type": "regex", "options": { "pattern": "^\"(.*)\"$", "result": { "text": "$1" } } } ]
+        },
+        "overrides": [
+          {
+            "matcher": { "id": "byName", "options": "Операция" },
+            "properties": [
+              {
+                "id": "links",
+                "value": [
+                  {
+                    "title": "Трассы операции",
+                    "url": "/a/grafana-exploretraces-app/explore?${__url_time_range}&var-ds=${ds_tempo}&var-primarySignal=true&var-filters=name%7C%3D%7C${__value.text:percentencode}&var-filters=resource.v8.infobase.name%7C%3D%7C${__data.fields[\"База\"]:percentencode}&var-filters=span.v8.techlog.Usr%7C%3D%7C${__data.fields[\"Пользователь\"]:percentencode}&var-metric=duration&actionView=traceList"
+                  }
+                ]
+              }
+            ]
+          },
+          { "matcher": { "id": "byName", "options": "База" }, "properties": [ { "id": "custom.width", "value": 120 } ] },
+          { "matcher": { "id": "byName", "options": "Пользователь" }, "properties": [ { "id": "custom.width", "value": 140 } ] },
+          {
+            "matcher": { "id": "byName", "options": "Среднее" },
+            "properties": [
+              { "id": "unit", "value": "s" },
+              { "id": "min", "value": 0 },
+              { "id": "custom.width", "value": 260 },
+              { "id": "color", "value": { "mode": "fixed", "fixedColor": "orange" } },
+              { "id": "custom.cellOptions", "value": { "type": "gauge", "mode": "basic", "valueDisplayMode": "text" } }
+            ]
+          }
+        ]
+      },
+      "options": { "showHeader": true, "cellHeight": "sm" }
+    },
+    {
+      "id": 20,
+      "type": "bargauge",
+      "title": "Частые операции",
+      "description": "Число спанов по операции за период, не больше 7 дней. Нажмите на операцию, чтобы открыть её трассы",
+      "datasource": { "type": "tempo", "uid": "${ds_tempo}" },
+      "gridPos": { "x": 0, "y": 73, "w": 12, "h": 14 },
+      "targets": [
+        {
+          "refId": "A",
+          "queryType": "traceql",
+          "metricsQueryType": "instant",
+          "query": "{resource.service.name=~\"$service\" && resource.v8.infobase.name=~\"$infobase\" && span.v8.techlog.Usr=~\"$user\"} | count_over_time() by (name) | topk(10)"
+        }
+      ],
+      "transformations": [
+        { "id": "reduce", "options": { "reducers": ["lastNotNull"], "labelsToFields": true } },
+        { "id": "sortBy", "options": { "sort": [ { "field": "Last *", "desc": true } ] } }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "decimals": 0,
+          "min": 0,
+          "displayName": "${__data.fields.name}",
+          "color": { "mode": "fixed", "fixedColor": "blue" },
+          "mappings": [ { "type": "regex", "options": { "pattern": "^\"(.*)\"$", "result": { "text": "$1" } } } ],
+          "links": [
+            {
+              "title": "Трассы операции",
+              "url": "/a/grafana-exploretraces-app/explore?${__url_time_range}&var-ds=${ds_tempo}&var-primarySignal=true&var-filters=name%7C%3D%7C${__data.fields.name:percentencode}&var-metric=rate&actionView=traceList"
+            }
+          ]
+        },
+        "overrides": []
+      },
+      "options": { "orientation": "horizontal", "displayMode": "basic", "showUnfilled": true, "namePlacement": "top", "sizing": "manual", "maxVizHeight": 36, "minVizHeight": 28, "reduceOptions": { "values": true, "calcs": [], "limit": 10 } }
+    },
+    {
+      "id": 21,
+      "type": "bargauge",
+      "title": "Время пользователей",
+      "description": "Суммарная длительность серверных вызовов (CALL) пользователя за период, не больше 7 дней. Нажмите на пользователя, чтобы открыть его трассы",
+      "datasource": { "type": "tempo", "uid": "${ds_tempo}" },
+      "gridPos": { "x": 12, "y": 73, "w": 12, "h": 14 },
+      "targets": [
+        {
+          "refId": "A",
+          "queryType": "traceql",
+          "metricsQueryType": "instant",
+          "query": "{resource.service.name=~\"$service\" && resource.v8.infobase.name=~\"$infobase\" && span.v8.techlog.Usr=~\"$user\" && kind = server} | sum_over_time(duration) by (span.v8.techlog.Usr) | topk(10)"
+        }
+      ],
+      "transformations": [
+        { "id": "reduce", "options": { "reducers": ["lastNotNull"], "labelsToFields": true } },
+        { "id": "sortBy", "options": { "sort": [ { "field": "Last *", "desc": true } ] } }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "s",
+          "min": 0,
+          "displayName": "${__data.fields[\"span.v8.techlog.Usr\"]}",
+          "color": { "mode": "fixed", "fixedColor": "purple" },
+          "mappings": [ { "type": "regex", "options": { "pattern": "^\"(.*)\"$", "result": { "text": "$1" } } } ],
+          "links": [
+            {
+              "title": "Трассы пользователя",
+              "url": "/a/grafana-exploretraces-app/explore?${__url_time_range}&var-ds=${ds_tempo}&var-primarySignal=nestedSetParent%3C0&var-filters=span.v8.techlog.Usr%7C%3D%7C${__data.fields[\"span.v8.techlog.Usr\"]:percentencode}&var-metric=duration&actionView=traceList"
+            }
+          ]
+        },
+        "overrides": []
+      },
+      "options": { "orientation": "horizontal", "displayMode": "basic", "showUnfilled": true, "namePlacement": "top", "sizing": "manual", "maxVizHeight": 36, "minVizHeight": 28, "reduceOptions": { "values": true, "calcs": [], "limit": 10 } }
+    },
+    {
+      "id": 18,
+      "type": "table",
+      "title": "Трассы от $min_duration",
+      "description": "Последние трассы не короче порога «Трассы от». Нажмите на идентификатор трассы, чтобы открыть её каскад вызовов. Поиск в Tempo охватывает не больше 7 дней",
+      "timeFrom": "7d",
+      "datasource": { "type": "tempo", "uid": "${ds_tempo}" },
+      "gridPos": { "x": 0, "y": 87, "w": 24, "h": 10 },
+      "targets": [
+        {
+          "refId": "A",
+          "queryType": "traceql",
+          "tableType": "traces",
+          "limit": 20,
+          "query": "{resource.service.name=~\"$service\" && resource.v8.infobase.name=~\"$infobase\" && span.v8.techlog.Usr=~\"$user\" && nestedSetParent < 0 && duration >= $min_duration}"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {},
+        "overrides": [
+          {
+            "matcher": { "id": "byName", "options": "traceID" },
+            "properties": [
+              {
+                "id": "links",
+                "value": [
+                  {
+                    "title": "Показать каскад",
+                    "url": "/d/opentelemetry-v8-logs?${__url_time_range}&${infobase:queryparam}&${service:queryparam}&${user:queryparam}&${min_duration:queryparam}&var-trace_id=${__value.raw}&viewPanel=panel-22"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      "options": { "showHeader": true }
+    },
+    {
+      "id": 22,
+      "type": "traces",
+      "title": "Каскад вызовов",
+      "description": "Трасса из поля «Трасса»: спаны по вложенности и времени, атрибуты спана и переход к его записям в Loki",
+      "datasource": { "type": "tempo", "uid": "${ds_tempo}" },
+      "gridPos": { "x": 0, "y": 97, "w": 24, "h": 22 },
+      "targets": [
+        {
+          "refId": "A",
+          "queryType": "traceql",
+          "query": "${trace_id}"
+        }
+      ]
+    }
+  ]
+}

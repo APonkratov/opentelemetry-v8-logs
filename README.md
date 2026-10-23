@@ -31,11 +31,11 @@ opm install opentelemetry-v8-logs
 docker compose -f demo/docker-compose.yml up -d
 
 # настройки - в autumn-properties.json текущего каталога, пример в demo/
-cp demo/autumn-properties.json .
+cp demo/autumn-properties.json .   # укажите свои каталоги журналов
 opentelemetry-v8-logs
 ```
 
-Grafana будет доступна на http://localhost:3000: логи в Explore → Loki
+Grafana будет доступна на http://localhost:3000: дашборд «1С: журналы», логи в Explore → Loki
 (`{service_name="1c-cluster"}` - технологический журнал, `{service_name="erp"}` - журнал регистрации,
 `{service_name="opentelemetry-v8-logs"}` - логи самого коллектора), трассы в Explore → Tempo, метрики `v8_techlog_event_duration_*`
 и `v8_eventlog_records_total` в Prometheus.
