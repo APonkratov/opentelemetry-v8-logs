@@ -124,7 +124,7 @@ Loki делает индексируемыми метками только ат�
 |---------|------|
 | `CALL` | вид `SERVER` |
 | `DBMSSQL`, `DBPOSTGRS`, `DBORACLE`, `DB2`, `DBV8DBEng` | вид `CLIENT`, `db.system.name`; у файловой базы (`DBV8DBEng`) своего значения в семантических соглашениях нет, используется `1c.v8dbeng` |
-| `EXCP` | вид `INTERNAL`, статус `ERROR`, событие `exception` (`exception.type`, `exception.message`) |
+| `EXCP` | вид `INTERNAL`, статус `ERROR`, событие `exception`: `exception.type` из `Exception`, `exception.message` из `Descr`; если свойства нет, атрибут не заполняется |
 | остальные | вид `INTERNAL` |
 
 Атрибуты спанов - те же, что у записей лога. В потоковом режиме каждая запись лога события содержит
