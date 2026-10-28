@@ -44,6 +44,10 @@ Loki делает индексируемыми метками только ат�
 | `v8.techlog.<свойство>` | свойства события как есть: `v8.techlog.Usr`, `v8.techlog.t:clientID`, `v8.techlog.Sql`...; повторяющиеся свойства - массивом |
 | `process.executable.name`, `process.pid` | процесс и PID из имени каталога или файла |
 | `log.file.path` | путь к файлу журнала |
+| `db.system.name`, `db.namespace`, `server.address` | у событий СУБД, см. [трассы](./telemetry.md#трассы) |
+
+Запись лога и спан события получают один набор атрибутов: атрибуты раскладываются один раз на событие.
+Отличаются только атрибуты исключения - они у записи лога `EXCP`, а в спане - у события спана `exception`.
 
 Исключение `EXCP` записывается событием по семантическим соглашениям
 [exceptions-logs](https://opentelemetry.io/docs/specs/semconv/exceptions/exceptions-logs/):
