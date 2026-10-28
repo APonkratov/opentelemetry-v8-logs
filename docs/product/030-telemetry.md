@@ -132,9 +132,16 @@ Loki делает индексируемыми метками только ат�
 | Событие | Спан |
 |---------|------|
 | `CALL` | вид `SERVER` |
-| `DBMSSQL`, `DBPOSTGRS`, `DBORACLE`, `DB2`, `DBV8DBEng` | вид `CLIENT`, `db.system.name`; у файловой базы (`DBV8DBEng`) своего значения в семантических соглашениях нет, используется `1c.v8dbeng` |
+| `DBMSSQL`, `DBPOSTGRS`, `DBORACLE`, `DB2`, `DBV8DBEng` | вид `CLIENT`, `db.system.name`, `db.namespace`, `server.address`; у файловой базы (`DBV8DBEng`) своего значения `db.system.name` в семантических соглашениях нет, используется `1c.v8dbeng` |
 | `EXCP` | вид `INTERNAL`, статус `ERROR` с описанием из `Descr`, событие спана `exception` |
 | остальные | вид `INTERNAL` |
+
+`db.namespace` и `server.address` берутся из свойства `DataBase` в формате `<сервер>\<база>` - базы,
+указанной при подключении; разделитель - последний `\`. Сервер записывается как есть: экземпляр
+и порт из него не выделяются. У файловой базы `DataBase` - только имя базы, `server.address` нет.
+Без свойства `DataBase` атрибутов нет. У PostgreSQL `db.namespace` - база без схемы: схемы в журнале
+нет. У Oracle `db.namespace` - то, что 1С пишет в `DataBase`; совпадает ли оно с `DB_UNIQUE_NAME`
+из семантических соглашений, не проверено.
 
 Событие спана `exception` появляется в спане по-разному в зависимости от режима:
 
