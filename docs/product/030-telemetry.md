@@ -45,6 +45,7 @@ Loki делает индексируемыми метками только ат�
 | `process.executable.name`, `process.pid` | процесс и PID из имени каталога или файла |
 | `log.file.path` | путь к файлу журнала |
 | `db.system.name`, `db.namespace`, `server.address` | у событий СУБД, см. [трассы](./telemetry.md#трассы) |
+| `db.response.returned_rows` | у событий СУБД с настройкой `otel.v8-logs.returned-rows.enabled`: число строк результата из свойства `Rows`. Платформа пишет `Rows` только у запросов, которые возвращают строки; у изменяющих запросов его нет, число изменённых строк - в `RowsAffected` |
 
 Запись лога и спан события получают один набор атрибутов: атрибуты раскладываются один раз на событие.
 Отличаются только атрибуты исключения - они у записи лога `EXCP`, а в спане - у события спана `exception`.
@@ -136,7 +137,7 @@ Loki делает индексируемыми метками только ат�
 | Событие | Спан |
 |---------|------|
 | `CALL` | вид `SERVER` |
-| `DBMSSQL`, `DBPOSTGRS`, `DBORACLE`, `DB2`, `DBV8DBEng` | вид `CLIENT`, `db.system.name`, `db.namespace`, `server.address`; у файловой базы (`DBV8DBEng`) своего значения `db.system.name` в семантических соглашениях нет, используется `1c.v8dbeng` |
+| `DBMSSQL`, `DBPOSTGRS`, `DBORACLE`, `DB2`, `DBV8DBEng` | вид `CLIENT`, `db.system.name`, `db.namespace`, `server.address`, по настройке `db.response.returned_rows`; у файловой базы (`DBV8DBEng`) своего значения `db.system.name` в семантических соглашениях нет, используется `1c.v8dbeng` |
 | `EXCP` | вид `INTERNAL`, статус `ERROR` с описанием из `Descr`, событие спана `exception` |
 | остальные | вид `INTERNAL` |
 
