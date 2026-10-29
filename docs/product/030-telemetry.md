@@ -64,6 +64,11 @@ Loki делает индексируемыми метками только ат�
 | Метрика | Тип | Атрибуты |
 |---------|-----|----------|
 | `v8.techlog.event.duration`, с | гистограмма | `v8.techlog.event.name`, `process.executable.name`, `v8.infobase.name` |
+| `db.client.operation.duration`, с | гистограмма | `db.system.name`, `db.namespace`, `server.address` |
+
+`db.client.operation.duration` - метрика семантических соглашений: длительность событий СУБД
+(`DBMSSQL`, `DBPOSTGRS`, `DBORACLE`, `DB2`, `DBV8DBEng`) с границами бакетов из семантических
+соглашений. Атрибуты - те же, что у записи лога и спана события, см. [трассы](./telemetry.md#трассы).
 
 ### Трассы
 
