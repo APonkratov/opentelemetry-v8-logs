@@ -44,6 +44,10 @@ Loki делает индексируемыми метками только ат�
 | `v8.techlog.<свойство>` | свойства события как есть: `v8.techlog.Usr`, `v8.techlog.t:clientID`, `v8.techlog.Sql`...; повторяющиеся свойства - массивом |
 | `process.executable.name`, `process.pid` | процесс и PID из имени каталога или файла |
 | `log.file.path` | путь к файлу журнала |
+| `db.system.name`, `db.namespace`, `server.address` | у событий СУБД, см. [трассы](./telemetry.md#трассы) |
+
+Запись лога и спан события получают один набор атрибутов: атрибуты раскладываются один раз на событие.
+Отличаются только атрибуты исключения - они у записи лога `EXCP`, а в спане - у события спана `exception`.
 
 Исключение `EXCP` записывается событием по семантическим соглашениям
 [exceptions-logs](https://opentelemetry.io/docs/specs/semconv/exceptions/exceptions-logs/):
@@ -132,9 +136,18 @@ Loki делает индексируемыми метками только ат�
 | Событие | Спан |
 |---------|------|
 | `CALL` | вид `SERVER` |
-| `DBMSSQL`, `DBPOSTGRS`, `DBORACLE`, `DB2`, `DBV8DBEng` | вид `CLIENT`, `db.system.name`; у файловой базы (`DBV8DBEng`) своего значения в семантических соглашениях нет, используется `1c.v8dbeng` |
+| `DBMSSQL`, `DBPOSTGRS`, `DBORACLE`, `DB2`, `DBV8DBEng` | вид `CLIENT`, `db.system.name`, `db.namespace`, `server.address`; у файловой базы (`DBV8DBEng`) своего значения `db.system.name` в семантических соглашениях нет, используется `1c.v8dbeng` |
 | `EXCP` | вид `INTERNAL`, статус `ERROR` с описанием из `Descr`, событие спана `exception` |
 | остальные | вид `INTERNAL` |
+
+`db.namespace` и `server.address` берутся из свойства `DataBase` в формате `<сервер>\<база>` - базы,
+указанной при подключении; разделитель - последний `\`. У SQL Server с именованным экземпляром
+(`<сервер>\<экземпляр>\<база>`) экземпляр входит в `db.namespace`: `server.address` = `<сервер>`,
+`db.namespace` = `<экземпляр>|<база>`. Порт из сервера не выделяется. У файловой базы `DataBase` -
+только имя базы, `server.address` нет. Без свойства `DataBase` атрибутов нет. У PostgreSQL
+`db.namespace` - база без схемы: схемы в журнале нет. У Oracle база 1С - схема данных, а сервер базы
+данных - TNS-имя, поэтому `server.address` - TNS-имя, а `db.namespace` не заполняется: по семантическим
+соглашениям это уникальный идентификатор базы Oracle (`DB_UNIQUE_NAME`), которого в журнале нет.
 
 Событие спана `exception` появляется в спане по-разному в зависимости от режима:
 
